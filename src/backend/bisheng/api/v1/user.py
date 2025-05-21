@@ -212,7 +212,9 @@ async def get_info(login_user: UserPayload = Depends(get_login_user)):
         role, web_menu = gen_user_role(db_user)
         admin_group = UserGroupDao.get_user_admin_group(user_id)
         admin_group = [one.group_id for one in admin_group]
-        return resp_200(UserRead(role=str(role), web_menu=web_menu, admin_groups=admin_group, **db_user.__dict__))
+        # 从Redis获取当前会话的access_token
+        access_token = redis_client.get(USER_CURRENT_SESSION.format(user_id))
+        return resp_200(UserRead(role=str(role), web_menu=web_menu, admin_groups=admin_group, access_token=access_token, **db_user.__dict__))
     except Exception:
         raise HTTPException(status_code=500, detail='用户信息失败')
 

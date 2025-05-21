@@ -19,6 +19,35 @@ import { useQuery } from "react-query"
 function CustomTableRow({ data, index, user, onModel, onCheck }) {
     const { t } = useTranslation()
     const [expand, setExpand] = useState(false)
+    const token = user.access_token ? encodeURIComponent(user.access_token) : ''
+    const hostName = window.serverIP ? window.serverIP : window.location.hostname
+    const host = `http://${hostName}:8084`
+    console.log('hostName', hostName)
+    const links = [
+        {
+            name: '增值服务任务列表',
+            url: `${host}/#/home/tab1?userId=${token}`
+        },
+        {
+            name: '费用',
+            url: `${host}/#/third/countcost?userId=${token}`
+        },
+        {
+            name: '微调增值服务',
+            url: `${host}/#/third/finetuning?userId=${token}`
+        },
+        {
+            name: '推理加速增值服务',
+            url: `${host}/#/third/resoningtask?userId=${token}`
+        }
+    ]
+    // 跳转链接
+    const onLink = (url) => {
+        if (url) {
+            // window.location.href = url
+            window.open(url, '_blank')
+        }
+    }
 
     return <div className="text-sm bs-table-row">
         <div className={`grid grid-cols-2 transition-colors hover:bg-muted/50 items-center mt-1 mx-2 h-[52px] rounded-sm`}>
@@ -46,7 +75,8 @@ function CustomTableRow({ data, index, user, onModel, onCheck }) {
                             <TableHead className="w-[200px]">{t('model.modelName')}</TableHead>
                             <TableHead className="w-[200px] min-w-[100px]">{t('model.modelType')}</TableHead>
                             <TableHead className="w-[200px] min-w-[100px]">{t('model.status')}</TableHead>
-                            <TableHead className="w-[100px] min-w-[100px]">{t('model.onlineOfflineOperation')}</TableHead>
+                            <TableHead className="w-[200px] min-w-[100px]">{t('model.onlineOfflineOperation')}</TableHead>
+                            <TableHead></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -62,6 +92,20 @@ function CustomTableRow({ data, index, user, onModel, onCheck }) {
                                 </TableCell>
                                 <TableCell>
                                     <Switch disabled={user.role !== 'admin'} checked={m.online} onCheckedChange={(bool) => onCheck(index, bool, m.id)} />
+                                </TableCell>
+                                <TableCell className="flex justify-end">
+                                    <div className="flex">
+                                        {links.map((item, index) => (
+                                            <Button
+                                                key={`button-${index}`}
+                                                variant="link"
+                                                className="px-1 no-underline hover:underline "
+                                                onClick={() => onLink(item.url)}
+                                            >
+                                                {item.name}
+                                            </Button>
+                                        )) }
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}
