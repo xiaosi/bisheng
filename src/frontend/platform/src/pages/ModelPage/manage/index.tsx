@@ -20,32 +20,33 @@ function CustomTableRow({ data, index, user, onModel, onCheck }) {
     const { t } = useTranslation()
     const [expand, setExpand] = useState(false)
     const token = user.access_token ? encodeURIComponent(user.access_token) : ''
+    const userId = user.user_id || 0
     const hostName = window.serverIP ? window.serverIP : window.location.hostname
     const host = `http://${hostName}:8084`
     console.log('hostName', hostName)
     const links = [
         {
             name: '增值服务任务列表',
-            url: `${host}/#/home/tab1?userId=${token}`
+            url: `${host}/#/home/tab1?userId=${userId}&token=${token}`
         },
         {
             name: '费用',
-            url: `${host}/#/third/countcost?userId=${token}`
+            url: `${host}/#/third/countcost?userId=${userId}&token=${token}`
         },
         {
             name: '微调增值服务',
-            url: `${host}/#/third/finetuning?userId=${token}`
+            url: `${host}/#/third/finetuning?userId=${userId}&token=${token}`
         },
         {
             name: '推理加速增值服务',
-            url: `${host}/#/third/resoningtask?userId=${token}`
+            url: `${host}/#/third/resoningtask?userId=${userId}&token=${token}`
         }
     ]
     // 跳转链接
-    const onLink = (url) => {
-        if (url) {
+    const onLink = (url, modelName) => {
+        if (url && modelName) {
             // window.location.href = url
-            window.open(url, '_blank')
+            window.open(`${url}&model-name=${encodeURIComponent(modelName)}`, '_blank')
         }
     }
 
@@ -100,7 +101,7 @@ function CustomTableRow({ data, index, user, onModel, onCheck }) {
                                                 key={`button-${index}`}
                                                 variant="link"
                                                 className="px-1 no-underline hover:underline "
-                                                onClick={() => onLink(item.url)}
+                                                onClick={() => onLink(item.url, m.model_name)}
                                             >
                                                 {item.name}
                                             </Button>
