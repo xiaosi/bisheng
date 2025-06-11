@@ -27,26 +27,26 @@ function CustomTableRow({ data, index, user, onModel, onCheck }) {
     const links = [
         {
             name: '增值服务任务列表',
-            url: `${host}/#/home/tab1?userId=${userId}&token=${token}`
+            url: `${host}/#/home/tab1?userId=20250520035353173`
         },
         {
             name: '费用',
-            url: `${host}/#/third/countcost?userId=${userId}&token=${token}`
+            url: `${host}/#/third/countcost?userId=20250520035353173`
         },
         {
             name: '微调增值服务',
-            url: `${host}/#/third/finetuning?userId=${userId}&token=${token}`
+            url: `${host}/#/third/finetuning?userId=20250520035353173`
         },
         {
             name: '推理加速增值服务',
-            url: `${host}/#/third/resoningtask?userId=${userId}&token=${token}`
+            url: `${host}/#/third/resoningtask?userId=20250520035353173`
         }
     ]
     // 跳转链接
     const onLink = (url, modelName) => {
         if (url && modelName) {
             // window.location.href = url
-            window.open(`${url}&model-name=${encodeURIComponent(modelName)}`, '_blank')
+            window.open(`${url}`, '_blank')
         }
     }
 
