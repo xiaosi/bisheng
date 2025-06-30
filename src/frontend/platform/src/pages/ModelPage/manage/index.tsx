@@ -77,7 +77,7 @@ function CustomTableRow({ data, index, user, onModel, onCheck }) {
                             <TableHead className="w-[200px] min-w-[100px]">{t('model.modelType')}</TableHead>
                             <TableHead className="w-[200px] min-w-[100px]">{t('model.status')}</TableHead>
                             <TableHead className="w-[200px] min-w-[100px]">{t('model.onlineOfflineOperation')}</TableHead>
-                            <TableHead></TableHead>
+                            <TableHead className="text-center">未来算力网加速</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
