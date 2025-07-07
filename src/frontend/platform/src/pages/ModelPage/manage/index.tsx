@@ -26,19 +26,19 @@ function CustomTableRow({ data, index, user, onModel, onCheck }) {
     console.log('hostName', hostName)
     const links = [
         {
-            name: '增值服务任务列表',
+            name: '任务列表',
             url: `${host}/#/home/tab1?userId=20250520035353173`
         },
         {
-            name: '费用',
+            name: '服务费用',
             url: `${host}/#/third/countcost?userId=20250520035353173`
         },
         {
-            name: '微调增值服务',
+            name: '拉远微调',
             url: `${host}/#/third/finetuning?userId=20250520035353173`
         },
         {
-            name: '推理加速增值服务',
+            name: '推理加速',
             url: `${host}/#/third/resoningtask?userId=20250520035353173`
         }
     ]
@@ -77,7 +77,7 @@ function CustomTableRow({ data, index, user, onModel, onCheck }) {
                             <TableHead className="w-[200px] min-w-[100px]">{t('model.modelType')}</TableHead>
                             <TableHead className="w-[200px] min-w-[100px]">{t('model.status')}</TableHead>
                             <TableHead className="w-[200px] min-w-[100px]">{t('model.onlineOfflineOperation')}</TableHead>
-                            <TableHead className="text-center">未来算力网加速</TableHead>
+                            <TableHead className="text-center">算力网加速（增值服务）</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -94,7 +94,7 @@ function CustomTableRow({ data, index, user, onModel, onCheck }) {
                                 <TableCell>
                                     <Switch disabled={user.role !== 'admin'} checked={m.online} onCheckedChange={(bool) => onCheck(index, bool, m.id)} />
                                 </TableCell>
-                                <TableCell className="flex justify-end">
+                                <TableCell className="flex justify-center">
                                     <div className="flex">
                                         {links.map((item, index) => (
                                             <Button
