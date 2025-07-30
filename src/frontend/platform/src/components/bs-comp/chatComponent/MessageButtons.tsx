@@ -4,6 +4,7 @@ import { Button } from "@/components/bs-ui/button";
 import { copyTrackingApi, likeChatApi } from "@/controllers/API";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Cloudy } from "lucide-react";
 
 const enum ThumbsState {
     Default = 0,
@@ -11,7 +12,7 @@ const enum ThumbsState {
     ThumbsDown
 }
 
-export default function MessageButtons({ mark = false, id, onCopy, data, onUnlike, onMarkClick }) {
+export default function MessageButtons({ mark = false, id, is_local, msg, onCopy, data, onUnlike, onMarkClick }) {
     const { t } = useTranslation()
     const [state, setState] = useState<ThumbsState>(data)
     const [copied, setCopied] = useState(false)
@@ -38,11 +39,15 @@ export default function MessageButtons({ mark = false, id, onCopy, data, onUnlik
         copyTrackingApi(id)
     }
 
-    return <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+    return <div className={`flex gap-1 ${msg.category === 'stream_msg' ? '': 'opacity-0 group-hover:opacity-100 transition-opacity'}`}>
         {mark && <Button className="h-6 text-xs group-hover:opacity-100 opacity-0" onClick={onMarkClick}>
             <FlagIcon width={12} height={12} className="cursor-pointer" />
             <span>{t('addQa')}</span>
         </Button>}
+        {msg.category === 'stream_msg' && <div className="flex justify-center items-center text-xs text-gray-500">
+            <Cloudy className={`mr-1 ${is_local && 'text-[green]'}`} size={16} /> {is_local ? '已使用云端算力' : '未使用云端算力'}
+        </div>
+        }
         <ThunmbIcon
             type='copy'
             className={`cursor-pointer ${copied && 'text-primary hover:text-primary'}`}

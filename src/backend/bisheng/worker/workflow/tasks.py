@@ -10,7 +10,7 @@ from bisheng.workflow.common.workflow import WorkflowStatus
 from bisheng.workflow.graph.workflow import Workflow
 
 
-def _execute_workflow(unique_id: str, workflow_id: str, chat_id: str, user_id: str):
+def _execute_workflow(unique_id: str, workflow_id: str, chat_id: str, user_id: str, scn_did: str = None):
     redis_callback = RedisCallback(unique_id, workflow_id, chat_id, user_id)
     try:
         # update workflow status
@@ -25,7 +25,8 @@ def _execute_workflow(unique_id: str, workflow_id: str, chat_id: str, user_id: s
         workflow = Workflow(workflow_id, user_id, workflow_data, False,
                             workflow_conf.max_steps,
                             workflow_conf.timeout,
-                            redis_callback)
+                            redis_callback,
+                            scn_did)
         redis_callback.workflow = workflow
         start_time = time.time()
         status, reason = workflow.run()
@@ -63,7 +64,7 @@ def _execute_workflow(unique_id: str, workflow_id: str, chat_id: str, user_id: s
 
 
 @bisheng_celery.task
-def execute_workflow(unique_id: str, workflow_id: str, chat_id: str, user_id: str):
+def execute_workflow(unique_id: str, workflow_id: str, chat_id: str, user_id: str, scn_did: str = None):
     """ 执行workflow """
     with logger.contextualize(trace_id=unique_id):
-        _execute_workflow(unique_id, workflow_id, chat_id, user_id)
+        _execute_workflow(unique_id, workflow_id, chat_id, user_id, scn_did)

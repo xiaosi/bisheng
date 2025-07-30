@@ -23,9 +23,9 @@ class WorkflowClient(BaseClient):
 
     def __init__(self, request: Request, client_key: str, client_id: str, chat_id: str,
                  user_id: int, login_user: UserPayload, work_type: WorkType, websocket: WebSocket,
-                 **kwargs):
+                 scn_did: str = None, **kwargs):
         super().__init__(request, client_key, client_id, chat_id, user_id, login_user, work_type,
-                         websocket, **kwargs)
+                         websocket, scn_did, **kwargs)
 
         self.workflow: Optional[RedisCallback] = None
         self.latest_history: Optional[ChatMessage] = None
@@ -133,7 +133,7 @@ class WorkflowClient(BaseClient):
             self.workflow.set_workflow_data(workflow_data)
             self.workflow.set_workflow_status(WorkflowStatus.WAITING.value)
             # 发起异步任务
-            execute_workflow.delay(unique_id, workflow_id, self.chat_id, str(self.user_id))
+            execute_workflow.delay(unique_id, workflow_id, self.chat_id, str(self.user_id), self.scn_did)
             await self.send_response('processing', 'begin', '')
             await self.workflow_run()
         except Exception as e:

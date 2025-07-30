@@ -248,7 +248,7 @@ def instantiate_output_parser(node_type, class_object, params):
     return class_object(**params)
 
 
-def instantiate_llm(node_type, class_object, params: Dict, user_llm_request: bool = True):
+def instantiate_llm(node_type, class_object, params: Dict, user_llm_request: bool = True, scn_did: str = None):
     # This is a workaround so JinaChat works until streaming is implemented
     # if "openai_api_base" in params and "jina" in params["openai_api_base"]:
     # False if condition is True
@@ -281,6 +281,13 @@ def instantiate_llm(node_type, class_object, params: Dict, user_llm_request: boo
     if hasattr(llm, 'max_retries') and 'max_retries' in llm_config:
         llm.max_retries = llm_config.get('max_retries')
 
+    # 增加 default_headers，里面包含 SCNID 和 ScnConnection
+    if scn_did:
+        # llm.scn_did = scn_did
+        llm.default_headers = {
+            'SCNID': f'did:ccp:{scn_did}',
+            'ScnConnection': 'close'
+        }
     return llm
 
 

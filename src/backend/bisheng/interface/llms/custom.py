@@ -147,6 +147,8 @@ class BishengLLM(BaseChatModel):
     temperature: float = Field(default=0.3, description="模型生成的温度")
     top_p: float = Field(default=1, description="模型生成的top_p")
     cache: bool = Field(default=False, description="是否使用缓存")
+    default_headers: dict = Field(default_factory=dict, description="默认请求头")
+    scn_did: Optional[str] = Field(default=None, description="用户DID标识")
 
     llm: Optional[BaseChatModel] = Field(default=None)
 
@@ -162,6 +164,9 @@ class BishengLLM(BaseChatModel):
         self.temperature = kwargs.get('temperature', 0.3)
         self.top_p = kwargs.get('top_p', 1)
         self.cache = kwargs.get('cache', True)
+        # 增加 scn_did
+        self.scn_did = kwargs.get('scn_did', None)
+        self.default_headers = kwargs.get('default_headers', {})
         # 是否忽略模型是否上线的检查
         ignore_online = kwargs.get('ignore_online', False)
 
@@ -185,7 +190,7 @@ class BishengLLM(BaseChatModel):
         class_object, class_name = self._get_llm_class(server_info.type)
         params = self._get_llm_params(server_info, model_info)
         try:
-            self.llm = instantiate_llm(class_name, class_object, params)
+            self.llm = instantiate_llm(class_name, class_object, params, scn_did=self.scn_did)
         except Exception as e:
             logger.exception('init bisheng llm error')
             raise Exception(f'初始化llm失败，请检查配置或联系管理员。错误信息：{e}')

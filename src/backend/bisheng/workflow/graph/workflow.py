@@ -16,11 +16,13 @@ class Workflow:
                  async_mode: bool = False,
                  max_steps: int = 0,
                  timeout: int = 0,
-                 callback: BaseCallback = None):
+                 callback: BaseCallback = None,
+                 scn_did: str = None):
 
         # 运行的唯一标识，保存到数据库的唯一ID
         self.workflow_id = workflow_id
         self.user_id = user_id
+        self.scn_did = scn_did
 
         # 超时时间，多久没有接收到用户输入终止workflow运行（单位：分钟）
         self.timeout = timeout
@@ -31,7 +33,8 @@ class Workflow:
                                         workflow_id=workflow_id,
                                         workflow_data=workflow_data,
                                         max_steps=max_steps,
-                                        callback=callback)
+                                        callback=callback,
+                                        scn_did=scn_did)
 
     def save_user_input_history(self, input_data: dict | None):
         if not input_data:

@@ -3,6 +3,7 @@ import asyncio
 import json
 import time
 import uuid
+import httpx
 from typing import AsyncIterator
 
 from cachetools import TTLCache
@@ -256,6 +257,7 @@ class RedisCallback(BaseCallback):
             chat_response.source = source
             chat_response.extra = json.dumps(extra, ensure_ascii=False)
 
+        logger.debug(f'chat response: {chat_response}')
         message = ChatMessageDao.insert_one(ChatMessage(
             user_id=self.user_id,
             chat_id=self.chat_id,
@@ -263,6 +265,7 @@ class RedisCallback(BaseCallback):
             type=chat_response.type,
 
             is_bot=chat_response.is_bot,
+            is_local=chat_response.is_local,  # 新增is_local字段
             source=chat_response.source,
             message=chat_response.message if isinstance(chat_response.message, str) else json.dumps(
                 chat_response.message, ensure_ascii=False),
@@ -370,6 +373,7 @@ class RedisCallback(BaseCallback):
 
     def on_stream_over(self, data: StreamMsgOverData):
         logger.debug(f'stream over: {data}')
+        is_local = self.get_third_party_is_local(self.chat_id)
         # 替换掉minio的share前缀，通过nginx转发  ugly solve
         minio_share = settings.get_knowledge().get('minio', {}).get('MINIO_SHAREPOIN', '')
         data.msg = data.msg.replace(f"http://{minio_share}", "")
@@ -378,7 +382,8 @@ class RedisCallback(BaseCallback):
                                      extra='',
                                      type='end',
                                      flow_id=self.workflow_id,
-                                     chat_id=self.chat_id)
+                                     chat_id=self.chat_id,
+                                     is_local=is_local)
         msg_id = self.save_chat_message(chat_response, source_documents=data.source_documents)
         if msg_id:
             chat_response.message_id = msg_id
@@ -386,13 +391,15 @@ class RedisCallback(BaseCallback):
 
     def on_output_choose(self, data: OutputMsgChooseData):
         logger.debug(f'output choose: {data}')
+        is_local = self.get_third_party_is_local(self.chat_id)
         chat_response = ChatResponse(message=data.dict(exclude={'source_documents'}),
                                      category=WorkflowEventType.OutputWithChoose.value,
                                      extra='',
                                      type='over',
                                      flow_id=self.workflow_id,
                                      chat_id=self.chat_id,
-                                     files=data.files)
+                                     files=data.files,
+                                     is_local=is_local)
         msg_id = self.save_chat_message(chat_response, source_documents=data.source_documents)
         if msg_id:
             chat_response.message_id = msg_id
@@ -411,3 +418,19 @@ class RedisCallback(BaseCallback):
         if msg_id:
             chat_response.message_id = msg_id
         self.send_chat_response(chat_response)
+
+    def get_third_party_is_local(self, scn_did: str) -> bool:
+        """调用第三方接口获取is_local状态"""
+        try:
+            with httpx.Client(timeout=3) as client:
+                response = client.get(
+                    'https://m1.apifoxmock.com/m1/5189973-4855568-default/api/test',  # 需要在settings中配置接口URL
+                    params={"sid": f"/pml/ar/user/did:ccp.{scn_did}"}
+                )
+                response.raise_for_status()
+                result = response.json()
+                logger.debug(f'response result: {result}')
+                return result.get("islocal", False)
+        except Exception as e:
+            logger.error(f"获取第三方is_local状态失败: {str(e)}")
+            return False  # 失败时默认返回False

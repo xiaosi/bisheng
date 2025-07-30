@@ -161,6 +161,7 @@ class ChatResponse(ChatMessage):
 
     intermediate_steps: str = ''
     is_bot: bool | int = True
+    is_local: bool | int = True
     category: str = 'processing'
 
     @field_validator('type')

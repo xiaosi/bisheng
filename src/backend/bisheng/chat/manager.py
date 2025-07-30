@@ -221,7 +221,8 @@ class ChatManager:
                                          login_user.user_id,
                                          login_user,
                                          work_type,
-                                         websocket)
+                                         websocket,
+                                         scn_did=chat_id)
         await self.accept_client(client_key, chat_client, websocket)
         logger.debug(
             f'act=accept_client client_key={client_key} client_id={client_id} chat_id={chat_id}')

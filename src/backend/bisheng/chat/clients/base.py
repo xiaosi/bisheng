@@ -18,7 +18,7 @@ from bisheng.utils.threadpool import thread_pool
 
 class BaseClient(ABC):
     def __init__(self, request: Request, client_key: str, client_id: str, chat_id: str, user_id: int,
-                 login_user: UserPayload, work_type: WorkType, websocket: WebSocket, **kwargs):
+                 login_user: UserPayload, work_type: WorkType, websocket: WebSocket, scn_did: str = None, **kwargs):
         self.request = request
         self.client_key = client_key  # 客户端唯一标识
         self.client_id = client_id  # 业务的唯一标识，如助手或者技能ID
@@ -28,6 +28,8 @@ class BaseClient(ABC):
         self.work_type = work_type
         self.websocket = websocket
         self.kwargs = kwargs
+        # 新增用户did参数
+        self.scn_did = scn_did
 
         # 异步任务列表
         self.task_ids = []

@@ -138,7 +138,8 @@ export const useMessageStore = create<State & Actions>((set, get) => ({
             reasoning_log: reasoning_content ? currentMsg.reasoning_log + reasoning_content : currentMsg.reasoning_log,
             create_time: formatDate(new Date(), 'yyyy-MM-ddTHH:mm:ss'),
             source: data.source,
-            end: data.type === 'end'
+            end: data.type === 'end',
+            is_local: data.is_local || false
         }
 
         messages[currentMessageIndex] = newCurrentMessage

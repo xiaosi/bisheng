@@ -16,6 +16,9 @@ class LLMNode(BaseNode):
         # 判断是单次还是批量
         self._tab = self.node_data.tab['value']
 
+        # 新增从kwargs中获取scn_did
+        self.scn_did = kwargs.get('scn_did', None)
+
         # 是否输出结果给用户
         self._output_user = self.node_params.get('output_user', False)
 
@@ -39,7 +42,8 @@ class LLMNode(BaseNode):
                                                temperature=self.node_params.get(
                                                    'temperature', 0.3),
                                                params={'stream': self._stream},
-                                               cache=False)
+                                               cache=False,
+                                               scn_did=self.scn_did)
 
     def _run(self, unique_id: str):
         self._system_prompt_list = []
@@ -105,7 +109,7 @@ class LLMNode(BaseNode):
         self._user_prompt_list.append(user)
 
         logger.debug(
-            f'outputkey={output_key} workflow llm node prompt: system: {system}\nuser: {user}')
+            f'outputkey={output_key} workflow llm node prompt: scn_did:{self.scn_did}   system: {system}\nuser: {user}')
         llm_callback = LLMNodeCallbackHandler(callback=self.callback_manager,
                                               unique_id=unique_id,
                                               node_id=self.id,

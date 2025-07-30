@@ -172,6 +172,8 @@ export default function MessageBs({ debug, mark = false, logo, data, onUnlike = 
                         mark={mark}
                         id={data.id || data.message_id}
                         data={data.liked}
+                        is_local={data.is_local}
+                        msg={data}
                         onUnlike={onUnlike}
                         onCopy={handleCopyMessage}
                         onMarkClick={onMarkClick}

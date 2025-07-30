@@ -17,6 +17,7 @@ class LikedType(Enum):
 
 
 class MessageBase(SQLModelSerializable):
+    is_local: bool = Field(index=False, description='是否云端算力')
     is_bot: bool = Field(index=False, description='聊天角色')
     source: Optional[int] = Field(default=None, index=False, description='是否支持溯源')
     mark_status: Optional[int] = Field(index=False, default=1, description='标记状态')
