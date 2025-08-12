@@ -282,7 +282,7 @@ def instantiate_llm(node_type, class_object, params: Dict, user_llm_request: boo
         llm.max_retries = llm_config.get('max_retries')
 
     # 增加 default_headers，里面包含 SCNID 和 ScnConnection
-    if scn_did:
+    if scn_did and hasattr(llm, 'default_headers'):
         # llm.scn_did = scn_did
         llm.default_headers = {
             'SCNID': f'did:ccp:{scn_did}',

@@ -26,6 +26,8 @@ from langchain_core.messages import HumanMessage
 from langchain_core.runnables import RunnableConfig
 from loguru import logger
 
+from bisheng.utils.util import get_third_party_is_local
+
 router = APIRouter(prefix='/workstation', tags=['WorkStation'])
 
 titleInstruction = 'a concise, 5-word-or-less title for the conversation, using its same language, with no punctuation. Apply title case conventions appropriate for the language. Never directly mention the language name or the word "title"'  # noqa
@@ -74,7 +76,7 @@ def step_message(stepId, runId, index, msgId):
 
 
 def final_message(conversation: MessageSession, title: str, requestMessage: ChatMessage, text: str,
-                  error: bool, modelName: str):
+                  error: bool, modelName: str, is_local: bool = False):
     responseMessage = ChatMessageDao.insert_one(
         ChatMessage(
             user_id=conversation.user_id,
@@ -82,6 +84,7 @@ def final_message(conversation: MessageSession, title: str, requestMessage: Chat
             flow_id='',
             type='assistant',
             is_bot=True,
+            is_local=is_local,
             message=text,
             category='answer',
             sender=modelName,
@@ -311,6 +314,7 @@ async def chat_completions(
                 flow_id='',
                 type='human',
                 is_bot=False,
+                is_local=False,
                 sender='User',
                 files=json.dumps(data.files) if data.files else None,
                 extra=json.dumps({'parentMessageId': data.parentMessageId}),
@@ -320,7 +324,7 @@ async def chat_completions(
             ))
 
     # 掉用bishengllm 实现sse 返回
-    bishengllm = BishengLLM(model_id=data.model)
+    bishengllm = BishengLLM(model_id=data.model, scn_did=conversationId)
 
     # 模型掉用实现流式输出
     SSEClient = SSECallbackClient()
@@ -453,8 +457,11 @@ async def chat_completions(
         else:
             final_res = final_result.content if final_result else final_res
 
+        # 请求第三方接口
+        is_local = get_third_party_is_local(conversationId)
+        logger.debug(f'chat_id: {conversationId}, is_local: {is_local}')
         yield final_message(conversaiton, conversaiton.flow_name, message, final_res, error,
-                            modelName)
+                            modelName, is_local)
 
         if not data.conversationId:
             # 生成title

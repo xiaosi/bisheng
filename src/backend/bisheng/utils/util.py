@@ -1,6 +1,8 @@
 import importlib
 import inspect
 import re
+import httpx
+from loguru import logger
 from functools import wraps
 from typing import Dict, Optional
 from urllib.parse import urlparse
@@ -356,3 +358,19 @@ def _is_valid_url(url: str) -> bool:
     """Check if the url is valid."""
     parsed = urlparse(url)
     return bool(parsed.netloc) and bool(parsed.scheme)
+
+def get_third_party_is_local(scn_did: str) -> bool:
+    """调用第三方接口获取is_local状态"""
+    try:
+        with httpx.Client(timeout=10) as client:
+            response = client.get(
+                'https://m1.apifoxmock.com/m1/5189973-4855568-default/api/test',  # 需要在settings中配置接口URL
+                params={"sid": f"/pml/ar/user/did:ccp.{scn_did}"}
+            )
+            response.raise_for_status()
+            result = response.json()
+            logger.debug(f'get_third_party_is_local response result: {result}')
+            return result.get("islocal", False)
+    except Exception as e:
+        logger.error(f"获取第三方is_local状态失败: {str(e)}")
+        return False  # 失败时默认返回False

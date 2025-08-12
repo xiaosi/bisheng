@@ -144,6 +144,7 @@ class WorkstationMessage(BaseModel):
     conversationId: str
     createdAt: datetime
     isCreatedByUser: bool
+    isLocal: bool
     model: Optional[str]
     parentMessageId: Optional[str]
     sender: str
@@ -176,6 +177,7 @@ class WorkstationMessage(BaseModel):
             createdAt=message.create_time,
             updateAt=message.update_time,
             isCreatedByUser=not message.is_bot,
+            isLocal=message.is_local,
             model=None,
             parentMessageId=json.loads(message.extra).get('parentMessageId'),
             error=json.loads(message.extra).get('error', False),

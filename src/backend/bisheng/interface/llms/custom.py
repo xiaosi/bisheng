@@ -183,7 +183,7 @@ class BishengLLM(BaseChatModel):
             raise Exception(f'只支持LLM类型的模型，不支持{model_info.model_type}类型的模型')
         if not ignore_online and not model_info.online:
             raise Exception(f'{server_info.name}下的{model_info.model_name}模型已下线，请联系管理员上线对应的模型')
-        logger.debug(f'init_bisheng_llm: server_id: {server_info.id}, model_id: {model_info.id}')
+        logger.debug(f'init_bisheng_llm: server_id: {server_info.id}, model_id: {model_info.id}, scn_did: {self.scn_did}')
         self.model_info = model_info
         self.server_info = server_info
 
@@ -191,6 +191,7 @@ class BishengLLM(BaseChatModel):
         params = self._get_llm_params(server_info, model_info)
         try:
             self.llm = instantiate_llm(class_name, class_object, params, scn_did=self.scn_did)
+            logger.debug(f'init_bisheng_llm: llm: {self.llm}')
         except Exception as e:
             logger.exception('init bisheng llm error')
             raise Exception(f'初始化llm失败，请检查配置或联系管理员。错误信息：{e}')

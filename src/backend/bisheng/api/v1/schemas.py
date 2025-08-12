@@ -114,6 +114,7 @@ class AddChatMessages(BaseModel):
 class ChatList(BaseModel):
     """Chat message list."""
 
+    is_local: bool | int = False
     flow_name: str = None
     flow_description: str = None
     flow_id: str = None
@@ -139,6 +140,7 @@ class FlowGptsOnlineList(BaseModel):
 class ChatMessage(BaseModel):
     """Chat message schema."""
 
+    is_local: bool = False
     is_bot: bool = False
     message: Union[str, None, dict, list] = ''
     type: str = 'human'

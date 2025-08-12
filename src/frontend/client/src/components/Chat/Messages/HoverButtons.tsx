@@ -7,6 +7,7 @@ import { Fork } from '~/components/Conversations';
 import MessageAudio from './MessageAudio';
 import { cn } from '~/utils';
 import store from '~/store';
+import { Cloudy } from "lucide-react";
 
 type THoverButtons = {
   isEditing: boolean;
@@ -62,7 +63,7 @@ export default function HoverButtons({
     return null;
   }
 
-  const { isCreatedByUser, error } = message;
+  const { isCreatedByUser, error, isLocal } = message;
 
   const renderRegenerate = () => {
     if (!regenerateEnabled) {
@@ -168,6 +169,12 @@ export default function HoverButtons({
           <ContinueIcon className="h-4 w-4 hover:text-gray-500 dark:hover:text-gray-200 disabled:dark:hover:text-gray-400" />
         </button>
       ) : null}
+      { isLast ? (
+        <div className="flex justify-center items-center text-xs text-gray-500">
+          <Cloudy className={`mr-1 ${isLocal && 'text-[green]'}`} size={16} />
+          {isLocal ? '已使用云端算力' : '未使用云端算力'}
+        </div>
+        ) : null}
     </div>
   );
 }
