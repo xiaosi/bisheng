@@ -3,7 +3,6 @@ import asyncio
 import json
 import time
 import uuid
-import httpx
 from typing import AsyncIterator
 
 from cachetools import TTLCache
@@ -20,6 +19,7 @@ from bisheng.database.models.flow import FlowDao, FlowType
 from bisheng.database.models.message import ChatMessageDao, ChatMessage
 from bisheng.database.models.session import MessageSessionDao, MessageSession
 from bisheng.settings import settings
+from bisheng.utils.util import get_third_party_is_local
 from bisheng.workflow.callback.base_callback import BaseCallback
 from bisheng.workflow.callback.event import NodeStartData, NodeEndData, UserInputData, GuideWordData, GuideQuestionData, \
     OutputMsgData, StreamMsgData, StreamMsgOverData, OutputMsgChooseData, OutputMsgInputData
@@ -373,7 +373,7 @@ class RedisCallback(BaseCallback):
 
     def on_stream_over(self, data: StreamMsgOverData):
         logger.debug(f'stream over: {data}')
-        is_local = self.get_third_party_is_local(self.chat_id)
+        is_local = get_third_party_is_local(self.chat_id)
         # 替换掉minio的share前缀，通过nginx转发  ugly solve
         minio_share = settings.get_knowledge().get('minio', {}).get('MINIO_SHAREPOIN', '')
         data.msg = data.msg.replace(f"http://{minio_share}", "")
@@ -391,7 +391,7 @@ class RedisCallback(BaseCallback):
 
     def on_output_choose(self, data: OutputMsgChooseData):
         logger.debug(f'output choose: {data}')
-        is_local = self.get_third_party_is_local(self.chat_id)
+        is_local = get_third_party_is_local(self.chat_id)
         chat_response = ChatResponse(message=data.dict(exclude={'source_documents'}),
                                      category=WorkflowEventType.OutputWithChoose.value,
                                      extra='',
@@ -418,19 +418,3 @@ class RedisCallback(BaseCallback):
         if msg_id:
             chat_response.message_id = msg_id
         self.send_chat_response(chat_response)
-
-    def get_third_party_is_local(self, scn_did: str) -> bool:
-        """调用第三方接口获取is_local状态"""
-        try:
-            with httpx.Client(timeout=3) as client:
-                response = client.get(
-                    'https://m1.apifoxmock.com/m1/5189973-4855568-default/api/test',  # 需要在settings中配置接口URL
-                    params={"sid": f"/pml/ar/user/did:ccp.{scn_did}"}
-                )
-                response.raise_for_status()
-                result = response.json()
-                logger.debug(f'response result: {result}')
-                return result.get("islocal", False)
-        except Exception as e:
-            logger.error(f"获取第三方is_local状态失败: {str(e)}")
-            return False  # 失败时默认返回False

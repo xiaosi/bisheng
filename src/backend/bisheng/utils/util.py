@@ -364,7 +364,7 @@ def get_third_party_is_local(scn_did: str) -> bool:
     try:
         with httpx.Client(timeout=10) as client:
             response = client.get(
-                'https://m1.apifoxmock.com/m1/5189973-4855568-default/api/test',  # 需要在settings中配置接口URL
+                'http://172.24.79.39:32301/v1.0/snac/dstvisit/',  # 需要在settings中配置接口URL
                 params={"sid": f"/pml/ar/user/did:ccp.{scn_did}"}
             )
             response.raise_for_status()
