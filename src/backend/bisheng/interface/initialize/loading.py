@@ -270,6 +270,15 @@ def instantiate_llm(node_type, class_object, params: Dict, user_llm_request: boo
         elif not isinstance(params.get('max_tokens'), int):
             params.pop('max_tokens', None)
 
+    # 增加 scn_did
+    if scn_did:
+        custom_headers = {
+            'SCNID': f'did:ccp:{scn_did}',
+            'ScnConnection': 'close'
+        }
+    else:
+        custom_headers = None
+
     llm = class_object(**params)
     llm_config = settings.get_from_db('llm_request')
     # 支持request_timeout & max_retries
@@ -281,16 +290,14 @@ def instantiate_llm(node_type, class_object, params: Dict, user_llm_request: boo
     if hasattr(llm, 'max_retries') and 'max_retries' in llm_config:
         llm.max_retries = llm_config.get('max_retries')
 
-    # 增加 scn_did
-    if scn_did:
-        custom_headers = {
-            'SCNID': f'did:ccp:{scn_did}',
-            'ScnConnection': 'close'
-        }
+    # 增加 default_headers或者client_kwargs
+    if custom_headers:
         if hasattr(llm, 'default_headers'):
             llm.default_headers = custom_headers
         elif hasattr(llm, 'client_kwargs'):
             llm.client_kwargs = custom_headers
+        elif hasattr(llm, 'model_kwargs'):
+            llm.model_kwargs.update(custom_headers)
             
     return llm
 

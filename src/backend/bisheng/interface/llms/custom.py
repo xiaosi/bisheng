@@ -191,7 +191,7 @@ class BishengLLM(BaseChatModel):
         params = self._get_llm_params(server_info, model_info)
         try:
             self.llm = instantiate_llm(class_name, class_object, params, scn_did=self.scn_did)
-            logger.debug(f'init_bisheng_llm: llm: {self.llm}')
+            logger.debug(f'init_bisheng_llm: llm: {vars(self.llm)}')
         except Exception as e:
             logger.exception('init bisheng llm error')
             raise Exception(f'初始化llm失败，请检查配置或联系管理员。错误信息：{e}')
