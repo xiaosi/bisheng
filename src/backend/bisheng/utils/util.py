@@ -361,14 +361,19 @@ def _is_valid_url(url: str) -> bool:
 
 def get_third_party_is_local(scn_did: str) -> bool:
     """调用第三方接口获取is_local状态"""
+    logger.debug(f'get_third_party_is_local scn_did: {scn_did}')
     try:
         with httpx.Client(timeout=10) as client:
+            params = {"sid": f"/pml/ar/user/did:ccp:{scn_did}"}
+            api_url = 'http://10.2.0.217:32301/v1.0/snac/dstvisit/'
             response = client.get(
-                'http://172.24.79.39:32301/v1.0/snac/dstvisit/',  # 需要在settings中配置接口URL
-                params={"sid": f"/pml/ar/user/did:ccp.{scn_did}"}
+                api_url,  # 需要在settings中配置接口URL
+                params = params
             )
             response.raise_for_status()
             result = response.json()
+            logger.debug(f'get_third_party_is_local url: {api_url}')
+            logger.debug(f'get_third_party_is_local params: {params}')
             logger.debug(f'get_third_party_is_local response result: {result}')
             return result.get("islocal", False)
     except Exception as e:
