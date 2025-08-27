@@ -276,6 +276,7 @@ def instantiate_llm(node_type, class_object, params: Dict, user_llm_request: boo
             'SCNID': f'did:ccp:{scn_did}',
             'ScnConnection': 'close'
         }
+        params['default_headers'] = custom_headers
     else:
         custom_headers = None
 
@@ -291,13 +292,13 @@ def instantiate_llm(node_type, class_object, params: Dict, user_llm_request: boo
         llm.max_retries = llm_config.get('max_retries')
 
     # 增加 default_headers或者client_kwargs
-    if custom_headers:
-        if hasattr(llm, 'default_headers'):
-            llm.default_headers = custom_headers
-        elif hasattr(llm, 'client_kwargs'):
-            llm.client_kwargs = custom_headers
-        elif hasattr(llm, 'model_kwargs'):
-            llm.model_kwargs.update(custom_headers)
+    # if custom_headers:
+    #     if hasattr(llm, 'default_headers'):
+    #         llm.default_headers = custom_headers
+    #     elif hasattr(llm, 'client_kwargs'):
+    #         llm.client_kwargs = custom_headers
+    #     elif hasattr(llm, 'model_kwargs'):
+    #         llm.model_kwargs.update(custom_headers)
             
     return llm
 
