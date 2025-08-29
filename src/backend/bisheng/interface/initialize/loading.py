@@ -271,17 +271,22 @@ def instantiate_llm(node_type, class_object, params: Dict, user_llm_request: boo
             params.pop('max_tokens', None)
 
     # 增加 scn_did
-    if scn_did:
-        custom_headers = {
-            'SCNID': f'did:ccp:{scn_did}',
-            'ScnConnection': 'close'
-        }
-        params['default_headers'] = custom_headers
-        if node_type == 'BishengLLM':
-            params['scn_did'] = scn_did
-    else:
-        custom_headers = None
-
+    # if scn_did:
+    #     custom_headers = {
+    #         'SCNID': f'did:ccp:{scn_did}',
+    #         'ScnConnection': 'close'
+    #     }
+    #     params['default_headers'] = custom_headers
+    #     if node_type == 'BishengLLM':
+    #         params['scn_did'] = scn_did
+    # else:
+    #     custom_headers = None
+    custom_headers = {
+        'SCNID': f'did:ccp:B29o8q2w6Y8LC4udN7Vp',
+        'ScnConnection': 'close'
+    }
+    params['default_headers'] = custom_headers
+    logger.debug(f'==============custom_headers: {params}')
     llm = class_object(**params)
     llm_config = settings.get_from_db('llm_request')
     # 支持request_timeout & max_retries
