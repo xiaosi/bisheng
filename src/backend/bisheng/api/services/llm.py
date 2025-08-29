@@ -332,7 +332,9 @@ class LLMService:
     def get_bisheng_llm(cls, **kwargs) -> BaseChatModel:
         """ 获取评测功能的默认模型配置 """
         class_object = import_by_type(_type='llms', name='BishengLLM')
-        return instantiate_llm('BishengLLM', class_object, kwargs)
+        scn_did = kwargs.get('scn_did', None)
+        logger.debug(f'==============get_bisheng_llm: {kwargs} {scn_did}')
+        return instantiate_llm('BishengLLM', class_object, kwargs, scn_did=scn_did)
 
     @classmethod
     def get_bisheng_embedding(cls, **kwargs) -> Embeddings:

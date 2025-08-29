@@ -147,8 +147,9 @@ class BishengLLM(BaseChatModel):
     temperature: float = Field(default=0.3, description="模型生成的温度")
     top_p: float = Field(default=1, description="模型生成的top_p")
     cache: bool = Field(default=False, description="是否使用缓存")
-    default_headers: dict = Field(default_factory=dict, description="默认请求头")
+
     scn_did: Optional[str] = Field(default=None, description="用户DID标识")
+    default_headers: Optional[dict] = Field(default_factory=dict, description="默认请求头")
 
     llm: Optional[BaseChatModel] = Field(default=None)
 

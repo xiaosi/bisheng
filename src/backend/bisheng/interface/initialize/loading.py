@@ -277,6 +277,8 @@ def instantiate_llm(node_type, class_object, params: Dict, user_llm_request: boo
             'ScnConnection': 'close'
         }
         params['default_headers'] = custom_headers
+        if node_type == 'BishengLLM':
+            params['scn_did'] = scn_did
     else:
         custom_headers = None
 
