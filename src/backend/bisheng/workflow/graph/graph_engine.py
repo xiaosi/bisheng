@@ -201,11 +201,15 @@ class GraphEngine:
         start_node = None
         end_nodes = []
         interrupt_nodes = []
+        llm_index = 0
         for node in nodes:
             node_data = BaseNodeData(**node.get('data', {}))
             if not node_data.id:
                 raise Exception('node must have attribute id')
 
+            if node_data.type == NodeType.LLM.value and self.scn_did:
+                llm_index += 1
+            logger.debug(f'======node {self.scn_did} {node_data.type} {NodeType.LLM.value} llm index {llm_index}')
             node_instance = NodeFactory.instance_node(node_type=node_data.type,
                                                       node_data=node_data,
                                                       user_id=self.user_id,
@@ -215,7 +219,7 @@ class GraphEngine:
                                                           node_data.id),
                                                       max_steps=self.max_steps,
                                                       callback=self.callback,
-                                                      scn_did=self.scn_did)
+                                                      scn_did=f'{self.scn_did}-{llm_index}')
             if node_instance.is_condition_node():
                 self.condition_nodes.append(node_instance.id)
             self.nodes_map[node_data.id] = node_instance

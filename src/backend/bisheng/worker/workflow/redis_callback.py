@@ -375,7 +375,7 @@ class RedisCallback(BaseCallback):
 
     def on_stream_over(self, data: StreamMsgOverData):
         logger.debug(f'stream over: {data}')
-        is_local = get_third_party_is_local(self.scn_did)
+        is_local = get_third_party_is_local(f'{self.scn_did}-1')
         # 替换掉minio的share前缀，通过nginx转发  ugly solve
         minio_share = settings.get_knowledge().get('minio', {}).get('MINIO_SHAREPOIN', '')
         data.msg = data.msg.replace(f"http://{minio_share}", "")
@@ -393,7 +393,7 @@ class RedisCallback(BaseCallback):
 
     def on_output_choose(self, data: OutputMsgChooseData):
         logger.debug(f'output choose: {data}')
-        is_local = get_third_party_is_local(self.scn_did)
+        is_local = get_third_party_is_local(f'{self.scn_did}-1')
         chat_response = ChatResponse(message=data.dict(exclude={'source_documents'}),
                                      category=WorkflowEventType.OutputWithChoose.value,
                                      extra=json.dumps({'scn_did': self.scn_did}),
