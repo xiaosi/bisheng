@@ -17,29 +17,43 @@ from bisheng.interface.utils import wrapper_bisheng_model_limit_check, wrapper_b
     wrapper_bisheng_model_generator, wrapper_bisheng_model_generator_async
 
 
-def _get_ollama_params(params: dict, server_config: dict, model_config: dict) -> dict:
+def get_custom_header(scn_did: str = None) -> Dict[str, str]:
+    custom_headers: Dict[str, str] = {}
+    if scn_did:
+        custom_headers = {
+            'SCNID': f'did:ccp:{scn_did}',
+            'ScnConnection': 'close'
+        }
+    return custom_headers
+
+def _get_ollama_params(params: dict, server_config: dict, model_config: dict, scn_did: str = None) -> dict:
     params['base_url'] = server_config.get('base_url', '')
     # some bugs
     params['extract_reasoning'] = False
     params['stream'] = params.pop('streaming', True)
     if params.get('max_tokens'):
         params['num_ctx'] = params.pop('max_tokens', None)
+    if scn_did:
+        params['client_kwargs'] = {
+            'headers': get_custom_header(scn_did)
+        }
+    logger.debug(f'_get_ollama_params API params: {params}')
     return params
 
 
-def _get_xinference_params(params: dict, server_config: dict, model_config: dict) -> dict:
-    params = _get_openai_params(params, server_config, model_config)
+def _get_xinference_params(params: dict, server_config: dict, model_config: dict, scn_did: str = None) -> dict:
+    params = _get_openai_params(params, server_config, model_config, scn_did)
     if not params.get('api_key', None):
         params['api_key'] = 'Empty'
     return params
 
 
-def _get_bisheng_rt_params(params: dict, server_config: dict, model_config: dict) -> dict:
+def _get_bisheng_rt_params(params: dict, server_config: dict, model_config: dict, scn_did: str = None) -> dict:
     params.update(server_config)
     return params
 
 
-def _get_openai_params(params: dict, server_config: dict, model_config: dict) -> dict:
+def _get_openai_params(params: dict, server_config: dict, model_config: dict, scn_did: str = None) -> dict:
     if server_config:
         params.update({
             'api_key': server_config.get('openai_api_key') or server_config.get('api_key'),
@@ -47,20 +61,28 @@ def _get_openai_params(params: dict, server_config: dict, model_config: dict) ->
         })
     if server_config.get('openai_proxy'):
         params['openai_proxy'] = server_config.get('openai_proxy')
+    # 增加scn_did
+    if scn_did:
+        params['default_headers'] = get_custom_header(scn_did)
+    logger.debug(f'_get_openai_params API params: {params}')
     return params
 
 
-def _get_azure_openai_params(params: dict, server_config: dict, model_config: dict) -> dict:
+def _get_azure_openai_params(params: dict, server_config: dict, model_config: dict, scn_did: str = None) -> dict:
     params.update({
         'azure_endpoint': server_config.get('azure_endpoint'),
         'openai_api_key': server_config.get('openai_api_key'),
         'openai_api_version': server_config.get('openai_api_version'),
         'azure_deployment': params.pop('model'),
     })
+    # 增加scn_did
+    if scn_did:
+        params['default_headers'] = get_custom_header(scn_did)
+    logger.debug(f'_get_azure_openai_params API params: {params}')
     return params
 
 
-def _get_qwen_params(params: dict, server_config: dict, model_config: dict) -> dict:
+def _get_qwen_params(params: dict, server_config: dict, model_config: dict, scn_did: str = None) -> dict:
     params['dashscope_api_key'] = server_config.get('openai_api_key', '')
     params['model_kwargs'] = {
         'enable_search': model_config.get('enable_web_search', False),
@@ -71,7 +93,7 @@ def _get_qwen_params(params: dict, server_config: dict, model_config: dict) -> d
     return params
 
 
-def _get_qianfan_params(params: dict, server_config: dict, model_config: dict) -> dict:
+def _get_qianfan_params(params: dict, server_config: dict, model_config: dict, scn_did: str = None) -> dict:
     params['qianfan_ak'] = server_config.get('wenxin_api_key')
     params['qianfan_sk'] = server_config.get('wenxin_secret_key')
     if params.get('max_tokens'):
@@ -79,7 +101,7 @@ def _get_qianfan_params(params: dict, server_config: dict, model_config: dict) -
     return params
 
 
-def _get_minimax_params(params: dict, server_config: dict, model_config: dict) -> dict:
+def _get_minimax_params(params: dict, server_config: dict, model_config: dict, scn_did: str = None) -> dict:
     params['minimax_api_key'] = server_config.get('openai_api_key')
     params['base_url'] = server_config.get('openai_api_base')
     if 'max_tokens' not in params:
@@ -89,12 +111,12 @@ def _get_minimax_params(params: dict, server_config: dict, model_config: dict) -
     return params
 
 
-def _get_anthropic_params(params: dict, server_config: dict, model_config: dict) -> dict:
+def _get_anthropic_params(params: dict, server_config: dict, model_config: dict, scn_did: str = None) -> dict:
     params.update(server_config)
     return params
 
 
-def _get_zhipu_params(params: dict, server_config: dict, model_config: dict) -> dict:
+def _get_zhipu_params(params: dict, server_config: dict, model_config: dict, scn_did: str = None) -> dict:
     params['zhipuai_api_key'] = server_config.get('openai_api_key')
     params['zhipuai_api_base'] = server_config.get('openai_api_base')
     if 'chat/completions' not in params['zhipuai_api_base']:
@@ -102,7 +124,7 @@ def _get_zhipu_params(params: dict, server_config: dict, model_config: dict) -> 
     return params
 
 
-def _get_spark_params(params: dict, server_config: dict, model_config: dict) -> dict:
+def _get_spark_params(params: dict, server_config: dict, model_config: dict, scn_did: str = None) -> dict:
     params.update({
         'api_key': f'{server_config.get("api_key")}:{server_config.get("api_secret")}',
         'base_url': server_config.get('openai_api_base'),
@@ -149,7 +171,7 @@ class BishengLLM(BaseChatModel):
     cache: bool = Field(default=False, description="是否使用缓存")
 
     scn_did: Optional[str] = Field(default=None, description="用户DID标识")
-    default_headers: Optional[dict] = Field(default_factory=dict, description="默认请求头")
+    default_headers: Optional[dict] = Field(default=None, description="默认请求头")
 
     llm: Optional[BaseChatModel] = Field(default=None)
 
@@ -167,7 +189,7 @@ class BishengLLM(BaseChatModel):
         self.cache = kwargs.get('cache', True)
         # 增加 scn_did
         self.scn_did = kwargs.get('scn_did', None)
-        self.default_headers = kwargs.get('default_headers', {})
+        self.default_headers = kwargs.get('default_headers', None)
         # 是否忽略模型是否上线的检查
         ignore_online = kwargs.get('ignore_online', False)
 
@@ -191,7 +213,7 @@ class BishengLLM(BaseChatModel):
         class_object, class_name = self._get_llm_class(server_info.type)
         params = self._get_llm_params(server_info, model_info)
         try:
-            self.llm = instantiate_llm(class_name, class_object, params, scn_did=self.scn_did)
+            self.llm = instantiate_llm(class_name, class_object, params)
             logger.debug(f'init_bisheng_llm: llm: {vars(self.llm)}')
         except Exception as e:
             logger.exception('init bisheng llm error')
@@ -210,7 +232,7 @@ class BishengLLM(BaseChatModel):
         default_params = self._get_default_params(server_config, model_config)
 
         params_handler = _llm_node_type[server_info.type]['params_handler']
-        params = params_handler(default_params, server_config, model_config)
+        params = params_handler(default_params, server_config, model_config, scn_did = self.scn_did)
         return params
 
         params = {}

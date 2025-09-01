@@ -11,7 +11,7 @@ from bisheng.workflow.graph.workflow import Workflow
 
 
 def _execute_workflow(unique_id: str, workflow_id: str, chat_id: str, user_id: str, scn_did: str = None):
-    redis_callback = RedisCallback(unique_id, workflow_id, chat_id, user_id)
+    redis_callback = RedisCallback(unique_id, workflow_id, chat_id, user_id, scn_did)
     try:
         # update workflow status
         redis_callback.set_workflow_status(WorkflowStatus.RUNNING.value)

@@ -76,8 +76,9 @@ class WorkflowClient(BaseClient):
         if self.chat_id:
             await self.init_history()
             unique_id = f'{self.chat_id}_async_task_id'
+        self.scn_did = generate_uuid()
         logger.debug(f'init workflow with unique_id: {unique_id}, workflow_id: {workflow_id}, chat_id: {self.chat_id}')
-        self.workflow = RedisCallback(unique_id, workflow_id, self.chat_id, str(self.user_id))
+        self.workflow = RedisCallback(unique_id, workflow_id, self.chat_id, str(self.user_id), self.scn_did)
         # 判断workflow是否已上线，未上线的话关闭当前websocket链接
         workflow_db = FlowDao.get_flow_by_id(workflow_id)
         if workflow_db.status != FlowStatus.ONLINE.value and self.chat_id:
@@ -129,9 +130,10 @@ class WorkflowClient(BaseClient):
                 return
 
             # 发起新的workflow
-            self.workflow = RedisCallback(unique_id, workflow_id, self.chat_id, str(self.user_id))
+            self.workflow = RedisCallback(unique_id, workflow_id, self.chat_id, str(self.user_id), self.scn_did)
             self.workflow.set_workflow_data(workflow_data)
             self.workflow.set_workflow_status(WorkflowStatus.WAITING.value)
+            logger.debug(f'==============init_workflow:{unique_id} {self.scn_did}')
             # 发起异步任务
             execute_workflow.delay(unique_id, workflow_id, self.chat_id, str(self.user_id), self.scn_did)
             await self.send_response('processing', 'begin', '')

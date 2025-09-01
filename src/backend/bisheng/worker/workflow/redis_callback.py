@@ -29,7 +29,7 @@ from bisheng.workflow.common.workflow import WorkflowStatus
 
 class RedisCallback(BaseCallback):
 
-    def __init__(self, unique_id: str, workflow_id: str, chat_id: str, user_id: str):
+    def __init__(self, unique_id: str, workflow_id: str, chat_id: str, user_id: str, scn_did: str = None):
         super(RedisCallback, self).__init__()
         # 异步任务的唯一ID
         self.unique_id = unique_id
@@ -38,6 +38,8 @@ class RedisCallback(BaseCallback):
         self.user_id = user_id
         self.workflow = None
         self.create_session = False
+        # 新增did
+        self.scn_did = scn_did
 
         # workflow status cache in memory 10 seconds
         self.workflow_cache: TTLCache = TTLCache(maxsize=1024, ttl=10)
@@ -373,13 +375,13 @@ class RedisCallback(BaseCallback):
 
     def on_stream_over(self, data: StreamMsgOverData):
         logger.debug(f'stream over: {data}')
-        is_local = get_third_party_is_local(self.chat_id)
+        is_local = get_third_party_is_local(self.scn_did)
         # 替换掉minio的share前缀，通过nginx转发  ugly solve
         minio_share = settings.get_knowledge().get('minio', {}).get('MINIO_SHAREPOIN', '')
         data.msg = data.msg.replace(f"http://{minio_share}", "")
         chat_response = ChatResponse(message=data.dict(exclude={'source_documents'}),
                                      category=WorkflowEventType.StreamMsg.value,
-                                     extra='',
+                                     extra=json.dumps({'scn_did': self.scn_did}),
                                      type='end',
                                      flow_id=self.workflow_id,
                                      chat_id=self.chat_id,
@@ -391,10 +393,10 @@ class RedisCallback(BaseCallback):
 
     def on_output_choose(self, data: OutputMsgChooseData):
         logger.debug(f'output choose: {data}')
-        is_local = get_third_party_is_local(self.chat_id)
+        is_local = get_third_party_is_local(self.scn_did)
         chat_response = ChatResponse(message=data.dict(exclude={'source_documents'}),
                                      category=WorkflowEventType.OutputWithChoose.value,
-                                     extra='',
+                                     extra=json.dumps({'scn_did': self.scn_did}),
                                      type='over',
                                      flow_id=self.workflow_id,
                                      chat_id=self.chat_id,

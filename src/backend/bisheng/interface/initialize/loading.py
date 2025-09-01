@@ -248,7 +248,7 @@ def instantiate_output_parser(node_type, class_object, params):
     return class_object(**params)
 
 
-def instantiate_llm(node_type, class_object, params: Dict, user_llm_request: bool = True, scn_did: str = None):
+def instantiate_llm(node_type, class_object, params: Dict, user_llm_request: bool = True):
     # This is a workaround so JinaChat works until streaming is implemented
     # if "openai_api_base" in params and "jina" in params["openai_api_base"]:
     # False if condition is True
@@ -270,23 +270,6 @@ def instantiate_llm(node_type, class_object, params: Dict, user_llm_request: boo
         elif not isinstance(params.get('max_tokens'), int):
             params.pop('max_tokens', None)
 
-    # 增加 scn_did
-    # if scn_did:
-    #     custom_headers = {
-    #         'SCNID': f'did:ccp:{scn_did}',
-    #         'ScnConnection': 'close'
-    #     }
-    #     params['default_headers'] = custom_headers
-    #     if node_type == 'BishengLLM':
-    #         params['scn_did'] = scn_did
-    # else:
-    #     custom_headers = None
-    custom_headers = {
-        'SCNID': f'did:ccp:B29o8q2w6Y8LC4udN7Vp',
-        'ScnConnection': 'close'
-    }
-    params['default_headers'] = custom_headers
-    logger.debug(f'==============custom_headers: {params}')
     llm = class_object(**params)
     llm_config = settings.get_from_db('llm_request')
     # 支持request_timeout & max_retries
@@ -297,15 +280,6 @@ def instantiate_llm(node_type, class_object, params: Dict, user_llm_request: boo
             llm.request_timeout = llm_config.get('request_timeout')
     if hasattr(llm, 'max_retries') and 'max_retries' in llm_config:
         llm.max_retries = llm_config.get('max_retries')
-
-    # 增加 default_headers或者client_kwargs
-    # if custom_headers:
-    #     if hasattr(llm, 'default_headers'):
-    #         llm.default_headers = custom_headers
-    #     elif hasattr(llm, 'client_kwargs'):
-    #         llm.client_kwargs = custom_headers
-    #     elif hasattr(llm, 'model_kwargs'):
-    #         llm.model_kwargs.update(custom_headers)
             
     return llm
 

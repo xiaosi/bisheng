@@ -361,7 +361,7 @@ def _is_valid_url(url: str) -> bool:
 
 def get_third_party_is_local(scn_did: str) -> bool:
     """调用第三方接口获取is_local状态"""
-    params = {"sid": f"/pml/ar/user/did:ccp:B29o8q2w6Y8LC4udN7Vp"}
+    params = {"sid": f"/pml/ar/user/did:ccp:{scn_did}"}
     api_url = 'http://10.2.0.217:32301/v1.0/snac/dstvisit/'
     logger.debug(f'get_third_party_is_local url: {api_url}')
     logger.debug(f'get_third_party_is_local params: {params}')
