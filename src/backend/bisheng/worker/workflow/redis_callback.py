@@ -350,14 +350,17 @@ class RedisCallback(BaseCallback):
                          chat_id=self.chat_id))
 
     def on_output_msg(self, data: OutputMsgData):
-        logger.debug(f'output msg: {data}')
+        node_id = data.node_id
+        logger.debug(f'output msg:{self.user_id}-{node_id} {data}')
+        is_local = get_third_party_is_local(f'{self.scn_did}-{node_id}-{self.user_id}')
         chat_response = ChatResponse(message=data.dict(exclude={'source_documents'}),
                                      category=WorkflowEventType.OutputMsg.value,
-                                     extra='',
+                                     extra=json.dumps({'scn_did': self.scn_did, 'node_id': node_id}),
                                      type='over',
                                      flow_id=self.workflow_id,
                                      chat_id=self.chat_id,
-                                     files=data.files)
+                                     files=data.files,
+                                     is_local=is_local)
         msg_id = self.save_chat_message(chat_response, source_documents=data.source_documents)
         if msg_id:
             chat_response.message_id = msg_id
@@ -374,14 +377,15 @@ class RedisCallback(BaseCallback):
                          chat_id=self.chat_id))
 
     def on_stream_over(self, data: StreamMsgOverData):
-        logger.debug(f'stream over: {data}')
-        is_local = get_third_party_is_local(f'{self.scn_did}-1')
+        node_id = data.node_id
+        logger.debug(f'stream over:{self.user_id}-{node_id} {data}')
+        is_local = get_third_party_is_local(f'{self.scn_did}-{node_id}-{self.user_id}')
         # 替换掉minio的share前缀，通过nginx转发  ugly solve
         minio_share = settings.get_knowledge().get('minio', {}).get('MINIO_SHAREPOIN', '')
         data.msg = data.msg.replace(f"http://{minio_share}", "")
         chat_response = ChatResponse(message=data.dict(exclude={'source_documents'}),
                                      category=WorkflowEventType.StreamMsg.value,
-                                     extra=json.dumps({'scn_did': self.scn_did}),
+                                     extra=json.dumps({'scn_did': self.scn_did, 'node_id': node_id}),
                                      type='end',
                                      flow_id=self.workflow_id,
                                      chat_id=self.chat_id,
@@ -392,11 +396,12 @@ class RedisCallback(BaseCallback):
         self.send_chat_response(chat_response)
 
     def on_output_choose(self, data: OutputMsgChooseData):
-        logger.debug(f'output choose: {data}')
-        is_local = get_third_party_is_local(f'{self.scn_did}-1')
+        node_id = data.node_id
+        logger.debug(f'output choose:{self.user_id}-{node_id} {data}')
+        is_local = get_third_party_is_local(f'{self.scn_did}-{node_id}-{self.user_id}')
         chat_response = ChatResponse(message=data.dict(exclude={'source_documents'}),
                                      category=WorkflowEventType.OutputWithChoose.value,
-                                     extra=json.dumps({'scn_did': self.scn_did}),
+                                     extra=json.dumps({'scn_did': self.scn_did, 'node_id': node_id}),
                                      type='over',
                                      flow_id=self.workflow_id,
                                      chat_id=self.chat_id,
