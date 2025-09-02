@@ -29,6 +29,12 @@ class AgentNode(BaseNode):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # 新增：从kwargs中获取并设置scn_did属性
+        self.scn_did = kwargs.get('scn_did', None)
+        logger.debug(
+            f'AgentNode scn_did: {self.user_id} workflow_id: {self.workflow_id} scn_did: {self.scn_did}')
+
         # 判断是单次还是批量
         self._tab = self.node_data.tab['value']
 
@@ -53,7 +59,8 @@ class AgentNode(BaseNode):
         self._llm = LLMService.get_bisheng_llm(model_id=self.node_params['model_id'],
                                                temperature=self.node_params.get(
                                                    'temperature', 0.3),
-                                               cache=False)
+                                               cache=False,
+                                               scn_did=self.scn_did)
 
         # 是否输出结果给用户
         self._output_user = self.node_params.get('output_user', False)

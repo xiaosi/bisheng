@@ -45,7 +45,7 @@ export default function MessageButtons({ mark = false, id, is_local, msg, onCopy
             <span>{t('addQa')}</span>
         </Button>}
         {msg.category === 'stream_msg' && <div className="flex justify-center items-center text-xs text-gray-500">
-            <Cloudy className={`mr-1 ${is_local && 'text-[green]'}`} size={16} /> {is_local ? '已使用云端算力' : '未使用云端算力'}
+            <Cloudy className={`mr-1 ${!is_local && 'text-[green]'}`} size={16} /> {!is_local ? '已使用云端算力' : '未使用云端算力'}
         </div>
         }
         <ThunmbIcon

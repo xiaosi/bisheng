@@ -171,8 +171,8 @@ export default function HoverButtons({
       ) : null}
       { isLast ? (
         <div className="flex justify-center items-center text-xs text-gray-500">
-          <Cloudy className={`mr-1 ${isLocal && 'text-[green]'}`} size={16} />
-          {isLocal ? '已使用云端算力' : '未使用云端算力'}
+          <Cloudy className={`mr-1 ${!isLocal && 'text-[green]'}`} size={16} />
+          {!isLocal ? '已使用云端算力' : '未使用云端算力'}
         </div>
         ) : null}
     </div>

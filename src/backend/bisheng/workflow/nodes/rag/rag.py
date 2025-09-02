@@ -1,6 +1,7 @@
 import json
 import time
 from typing import List, Any
+from loguru import logger
 
 from bisheng.api.services.llm import LLMService
 from bisheng.chat.types import IgnoreException
@@ -21,6 +22,11 @@ class RagNode(BaseNode):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # 新增：从kwargs中获取并设置scn_did属性
+        self.scn_did = kwargs.get('scn_did', None)
+        logger.debug(
+            f'RagNode scn_did: {self.user_id} workflow_id: {self.workflow_id} scn_did: {self.scn_did}')
 
         # 判断是知识库还是临时文件列表
         if 'knowledge' not in self.node_params:
@@ -47,7 +53,8 @@ class RagNode(BaseNode):
         self._llm = LLMService.get_bisheng_llm(model_id=self.node_params['model_id'],
                                                temperature=self.node_params.get(
                                                    'temperature', 0.3),
-                                               cache=False)
+                                               cache=False,
+                                               scn_did=self.scn_did)
 
         self._user_info = UserDao.get_user(int(self.user_id))
 

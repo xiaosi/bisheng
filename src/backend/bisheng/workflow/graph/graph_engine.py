@@ -206,6 +206,10 @@ class GraphEngine:
             if not node_data.id:
                 raise Exception('node must have attribute id')
             logger.debug(f'======node {self.scn_did}-{node_data.type}-{node_data.id}-{self.user_id}')
+            if self.scn_did:
+                did = f'{self.scn_did}-{node_data.id}-{self.user_id}'
+            else:
+                did = None
             node_instance = NodeFactory.instance_node(node_type=node_data.type,
                                                       node_data=node_data,
                                                       user_id=self.user_id,
@@ -215,7 +219,7 @@ class GraphEngine:
                                                           node_data.id),
                                                       max_steps=self.max_steps,
                                                       callback=self.callback,
-                                                      scn_did=f'{self.scn_did}-{node_data.id}-{self.user_id}')
+                                                      scn_did=did)
             if node_instance.is_condition_node():
                 self.condition_nodes.append(node_instance.id)
             self.nodes_map[node_data.id] = node_instance
