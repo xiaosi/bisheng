@@ -352,7 +352,10 @@ class RedisCallback(BaseCallback):
     def on_output_msg(self, data: OutputMsgData):
         node_id = data.node_id
         logger.debug(f'output msg:{self.user_id}-{node_id} {data}')
-        is_local = get_third_party_is_local(f'{self.scn_did}-{node_id}-{self.user_id}')
+        if self.is_llm_node(node_id):
+            is_local = get_third_party_is_local(f'{self.scn_did}-{node_id}-{self.user_id}')
+        else:
+            is_local = False
         chat_response = ChatResponse(message=data.dict(exclude={'source_documents'}),
                                      category=WorkflowEventType.OutputMsg.value,
                                      extra=json.dumps({'scn_did': self.scn_did, 'node_id': node_id}),
@@ -379,7 +382,10 @@ class RedisCallback(BaseCallback):
     def on_stream_over(self, data: StreamMsgOverData):
         node_id = data.node_id
         logger.debug(f'stream over:{self.user_id}-{node_id} {data}')
-        is_local = get_third_party_is_local(f'{self.scn_did}-{node_id}-{self.user_id}')
+        if self.is_llm_node(node_id):
+            is_local = get_third_party_is_local(f'{self.scn_did}-{node_id}-{self.user_id}')
+        else:
+            is_local = False
         # 替换掉minio的share前缀，通过nginx转发  ugly solve
         minio_share = settings.get_knowledge().get('minio', {}).get('MINIO_SHAREPOIN', '')
         data.msg = data.msg.replace(f"http://{minio_share}", "")
@@ -398,7 +404,10 @@ class RedisCallback(BaseCallback):
     def on_output_choose(self, data: OutputMsgChooseData):
         node_id = data.node_id
         logger.debug(f'output choose:{self.user_id}-{node_id} {data}')
-        is_local = get_third_party_is_local(f'{self.scn_did}-{node_id}-{self.user_id}')
+        if self.is_llm_node(node_id):
+            is_local = get_third_party_is_local(f'{self.scn_did}-{node_id}-{self.user_id}')
+        else:
+            is_local = False
         chat_response = ChatResponse(message=data.dict(exclude={'source_documents'}),
                                      category=WorkflowEventType.OutputWithChoose.value,
                                      extra=json.dumps({'scn_did': self.scn_did, 'node_id': node_id}),
@@ -425,3 +434,10 @@ class RedisCallback(BaseCallback):
         if msg_id:
             chat_response.message_id = msg_id
         self.send_chat_response(chat_response)
+
+    def is_llm_node(self, node_id: str = None) -> bool:
+        """判断是否是大模型的节点"""
+        node_arr = ['llm', 'rag', 'agent']
+        yet = any(item in node_id for item in node_arr)
+        logger.debug(f'======is_large_model:{node_id} {yet}')
+        return yet
