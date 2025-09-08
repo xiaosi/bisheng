@@ -34,4 +34,7 @@ RUN patch -p1 < /app/bisheng/patches/langchain_openai.patch /usr/local/lib/pytho
 # fix fastapi-jwt-auth not support pydantic:v2
 RUN patch -p1 < /app/bisheng/patches/fastapi_jwt_auth.patch /usr/local/lib/python3.10/site-packages/fastapi_jwt_auth/config.py
 
+# fix ollama client headers lower
+RUN patch -p1 < /app/bisheng/patches/ollama_client.patch /usr/local/lib/python3.10/site-packages/ollama/_client.py
+
 CMD ["sh entrypoint.sh"]

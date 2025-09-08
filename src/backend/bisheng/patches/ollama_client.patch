@@ -1,0 +1,11 @@
+--- _client.py	2025-09-08 09:45:46
++++ _client_modify.py	2025-09-05 16:18:18
+@@ -96,7 +96,7 @@
+       timeout=timeout,
+       # Lowercase all headers to ensure override
+       headers={
+-        k.lower(): v
++        k.strip(): v
+         for k, v in {
+           **(headers or {}),
+           'Content-Type': 'application/json',

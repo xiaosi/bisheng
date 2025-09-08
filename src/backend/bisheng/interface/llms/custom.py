@@ -90,6 +90,9 @@ def _get_qwen_params(params: dict, server_config: dict, model_config: dict, scn_
     }
     if params.get('max_tokens'):
         params['model_kwargs']['max_tokens'] = params.get('max_tokens')
+    # 增加scn_did
+    if scn_did:
+        params['model_kwargs']['headers'] = get_custom_header(scn_did)
     return params
 
 
